@@ -5,3 +5,4 @@ release/
 .settings/
 bin/
 *.ser
+*.psd

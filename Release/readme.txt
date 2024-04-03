@@ -3,7 +3,7 @@
 =========================================================
 ================= MESSAGE Feb. 20, 2024 =================
 
-This java project/jar was written by 'Endless-Online Recharged' player "China".. The program is written without any malicious intent, e.g. this tool is virus/malware free. Generally speaking it's important not to run/execute any .exe, .jar -- and other variant forms -- to keep your computer/environment always secure. Normally when distributing this tool it should be downloaded as the raw .java source files, and the user themselves compile the code so there is transparency knowing they can trust the source. 
+This Java project/JAR was written by 'Endless-Online Recharged' player "China." The program is written without any malicious intent; this tool is virus/malware-free. Generally speaking, it's important not to run/execute any .exe, .jar—and other variant forms— unless you trust the source to keep your computer safe. When acquiring a distribution of this tool, it should only be downloaded/acquired from the GitHub source (https://github.com/Honorabl3/EO-HS-Tracker). If you received a copy of this tool from someone else, there is a possibility it could have been tampered with.
 
 
 This program is supposed to act as a tool to help my fellow xp-grinders track their xp/hr progress.
@@ -48,11 +48,6 @@ This program is supposed to act as a tool to help my fellow xp-grinders track th
 	- [Feature] Tracker presents data on Console / Command Prompt style window.
 	- [Fix] Now correctly accesses eodash api to pull data.
 	- [Fix] Tracker broke functionality because of eodash DDOS protection changes.
-
-
-================= FUTURE PLANS =================
-
-- [Feature] "Name" tracking: Additionally pull/display/track data on a specific player that isn't at the top of the highscores.
 
 
 ================= ISSUES =================
