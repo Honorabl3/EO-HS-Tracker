@@ -4,3 +4,4 @@ players/
 release/
 .settings/
 bin/
+*.ser
