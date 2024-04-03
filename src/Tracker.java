@@ -285,7 +285,6 @@ public class Tracker
 	                {
 	                	Entry tempEntry = web.list.get(a);
 	                	
-	                    int indexOfFirst, indexOfLast;
 	                    float xpPrediction = predictXPHR(web.list.get(a));
 	                    String xpMod = " ";
 	                    if(xpPrediction < 0)
