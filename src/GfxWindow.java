@@ -29,10 +29,10 @@ public class GfxWindow extends JPanel implements Runnable
     public JButton infoButton, changelogButton, refreshButton, addButton;
     
     //  SETTINGS PANEL
-    public JLabel settingsButton, settingsLabel1, settingsFontSizeLabel, settingsGraphLabel1, settingsDataLabel1, settingsSearchSize1Label, settingsSearchSize2Label;   //  settingsButton is a Label that behaves as a button
+    public JLabel settingsButton, settingsLabel1, settingsFontSizeLabel, settingsGraphLabel1, settingsGraphLabel2, settingsDataLabel1, settingsSearchSize1Label;   //  settingsButton is a Label that behaves as a button
     public JPanel settingsColorSchemaPanel, settingsGraphPanel, settingsDataPanel, settingsBottomPanel;
     public Color colorSchemaColor;
-    public JTextField colorSchema1TextField, colorSchema2TextField, colorSchema3TextField, settingsFontSize, settingsGraphNodeSpacing, settingsDataPullSize, settingsDataSearchSize;
+    public JTextField colorSchema1TextField, colorSchema2TextField, colorSchema3TextField, settingsFontSize, settingsGraphNodeSpacing, settingsGraphXPCeiling, settingsDataPullSize, settingsDataSearchSize;
     public JButton applySettingsButton, resetSettingsButton;
     public JComboBox fontComboBox;
     public JCheckBox debugCheckBox;
@@ -295,9 +295,36 @@ public class GfxWindow extends JPanel implements Runnable
             @Override
             public void mouseClicked(MouseEvent e)
             {
-            	JOptionPane.showMessageDialog(settingsPanel, "Spacing of horizontal data points in the unit of pixels.");
+            	JOptionPane.showMessageDialog(settingsPanel, "Spacing of horizontal data points/nodes in units of pixels.");
+            }
+            
+            @Override
+            public void mouseEntered(MouseEvent e)
+            {
+                settingsGraphLabel1.setForeground(Color.RED);
+            }
+            
+            @Override
+            public void mouseExited(MouseEvent e)
+            {
+                settingsGraphLabel1.setForeground(Color.WHITE);
             }
         });
+        
+        /*settingsGraphLabel1.addMouseMotionListener(new MouseAdapter()
+        {
+            @Override
+            public void mouseMoved(MouseEvent e)
+            {
+            	Rectangle labelBounds = settingsGraphLabel1.getBounds();
+                labelBounds.translate(0, 16); // Adjust the bounds downward by 5 pixels
+                if (labelBounds.contains(e.getPoint()))
+                    settingsGraphLabel1.setForeground(Color.WHITE);
+                else
+                    settingsGraphLabel1.setForeground(Color.RED);
+            }
+
+        });*/
         
         settingsGraphNodeSpacing = new JTextField(tracker.settings.graphNodeSpacing + "");
         settingsGraphNodeSpacing.setPreferredSize(new Dimension(40, 20));
@@ -319,6 +346,53 @@ public class GfxWindow extends JPanel implements Runnable
             }
         });
         
+        settingsGraphLabel2 = new JLabel();
+        settingsGraphLabel2.setFont(new Font("Comic Sans MS", Font.BOLD, 16));
+        settingsGraphLabel2.setForeground(Color.WHITE);
+        settingsGraphLabel2.setText("<html><p style=\"text-align: left;\">Graph XP Ceiling </p></html>");
+        settingsGraphPanel.add(settingsGraphLabel2);
+        
+        // Add MouseListener to the label
+        settingsGraphLabel2.addMouseListener(new MouseAdapter()
+        {
+            @Override
+            public void mouseClicked(MouseEvent e)
+            {
+            	JOptionPane.showMessageDialog(settingsPanel, "This field represents the maximum height/ceiling of the charted XP.\nThe default value for this variable is 3000.");
+            }
+            
+            @Override
+            public void mouseEntered(MouseEvent e)
+            {
+            	settingsGraphLabel2.setForeground(Color.RED);
+            }
+            
+            @Override
+            public void mouseExited(MouseEvent e)
+            {
+            	settingsGraphLabel2.setForeground(Color.WHITE);
+            }
+        });
+        
+        settingsGraphXPCeiling = new JTextField(tracker.settings.graphXPCeiling + "");
+        settingsGraphXPCeiling.setPreferredSize(new Dimension(40, 20));
+        settingsGraphPanel.add(settingsGraphXPCeiling);
+        
+        ((AbstractDocument)settingsGraphXPCeiling.getDocument()).setDocumentFilter(new DocumentFilter()
+        {
+            Pattern regEx = Pattern.compile("\\d*");
+    
+            @Override
+            public void replace(FilterBypass fb, int offset, int length, String text, AttributeSet attrs) throws BadLocationException
+            {          
+                Matcher matcher = regEx.matcher(text);
+                if(!matcher.matches())
+                {
+                    return;
+                }
+                super.replace(fb, offset, length, text, attrs);
+            }
+        });
         
         settingsDataPanel = new JPanel();
         settingsDataPanel.setBackground(Color.BLACK);
@@ -358,23 +432,25 @@ public class GfxWindow extends JPanel implements Runnable
         settingsSearchSize1Label.setText("<html><p style=\"text-align: left;\"> Data Search Size </p></html>");
         settingsDataPanel.add(settingsSearchSize1Label);
         
-        Border border = BorderFactory.createLineBorder(Color.WHITE, 2);
-        settingsSearchSize2Label = new JLabel("?");
-        settingsSearchSize2Label.setMinimumSize(new Dimension(20, 20));
-        settingsSearchSize2Label.setMaximumSize(new Dimension(20, 20));
-        settingsSearchSize2Label.setPreferredSize(new Dimension(20, 20));
-        settingsSearchSize2Label.setForeground(Color.WHITE);
-        settingsSearchSize2Label.setBorder(border);
-        settingsSearchSize2Label.setFont(new Font("Lucida Console", Font.BOLD, 16));
-        settingsDataPanel.add(settingsSearchSize2Label);
-        
         // Add MouseListener to the label
-        settingsSearchSize2Label.addMouseListener(new MouseAdapter()
+        settingsSearchSize1Label.addMouseListener(new MouseAdapter()
         {
             @Override
             public void mouseClicked(MouseEvent e)
             {
             	JOptionPane.showMessageDialog(settingsPanel, "When pulling in data, this field represents the amount\n of entries it's allowed to search for the \"specific player\" list.\nBy default the value is 5000, the higher the value the\n more processing must be done to find the data.");
+            }
+            
+            @Override
+            public void mouseEntered(MouseEvent e)
+            {
+            	settingsSearchSize1Label.setForeground(Color.RED);
+            }
+            
+            @Override
+            public void mouseExited(MouseEvent e)
+            {
+            	settingsSearchSize1Label.setForeground(Color.WHITE);
             }
         });
         
@@ -410,7 +486,7 @@ public class GfxWindow extends JPanel implements Runnable
         settingsBottomPanel.add(debugCheckBox);
         
         resetSettingsButton = new JButton("Reset Default");
-        resetSettingsButton.setPreferredSize(new Dimension(120, 20));
+        resetSettingsButton.setPreferredSize(new Dimension(112, 20));
         resetSettingsButton.setSize(new Dimension(120, 20));
         settingsBottomPanel.add(resetSettingsButton);
         
@@ -427,6 +503,7 @@ public class GfxWindow extends JPanel implements Runnable
                 fontComboBox.setSelectedItem((String) tracker.settings.font);
                 settingsFontSize.setText(tracker.settings.fontSize + "");
                 settingsGraphNodeSpacing.setText(tracker.settings.graphNodeSpacing + "");
+                settingsGraphNodeSpacing.setText(tracker.settings.graphXPCeiling + "");
                 settingsDataPullSize.setText(tracker.settings.pullSize + "");
                 settingsDataSearchSize.setText(tracker.settings.searchSize + "");
             }
@@ -443,13 +520,14 @@ public class GfxWindow extends JPanel implements Runnable
             public void actionPerformed(ActionEvent e)
             {
                 //  APPLY COLOR SWATCH HERE
-                int colorR = 0, colorG = 0, colorB = 0, fontSize = 12, graphNodeSpacing = 8, pullSize = 20, searchSize = 5000;
+                int colorR = 0, colorG = 0, colorB = 0, fontSize = 12, graphNodeSpacing = 8, graphXPCeiling = 3000, pullSize = 20, searchSize = 5000;
                 
                 colorR = Integer.parseInt(colorSchema1TextField.getText());
                 colorG = Integer.parseInt(colorSchema2TextField.getText());
                 colorB = Integer.parseInt(colorSchema3TextField.getText());
                 fontSize = Integer.parseInt(settingsFontSize.getText());
                 graphNodeSpacing = Integer.parseInt(settingsGraphNodeSpacing.getText());
+                graphXPCeiling = Integer.parseInt(settingsGraphXPCeiling.getText());
                 pullSize = Integer.parseInt(settingsDataPullSize.getText());
                 searchSize = Integer.parseInt(settingsDataSearchSize.getText());
                 
@@ -463,6 +541,8 @@ public class GfxWindow extends JPanel implements Runnable
                     settingsFontSize.setText("12");
                 if(settingsGraphNodeSpacing.getText().equals(""))
                 	settingsGraphNodeSpacing.setText("8");
+                if(settingsGraphXPCeiling.getText().equals(""))
+                	settingsGraphXPCeiling.setText("3000");
                 if(settingsDataPullSize.getText().equals(""))
                     settingsDataPullSize.setText("20");
                 if(settingsDataSearchSize.getText().equals(""))
@@ -474,7 +554,6 @@ public class GfxWindow extends JPanel implements Runnable
                     colorSchema2TextField.setText("0");
                 if(colorB < 0)
                     colorSchema3TextField.setText("0");
-                
                 if(colorR > 255)
                     colorSchema1TextField.setText("255");
                 if(colorG > 255)
@@ -485,10 +564,15 @@ public class GfxWindow extends JPanel implements Runnable
                     settingsFontSize.setText("8");
                 if(fontSize > 90)
                     settingsFontSize.setText("90");
-                if(graphNodeSpacing > 100)
-                	settingsGraphNodeSpacing.setText("100");
+                
                 if(graphNodeSpacing < 1)
                 	settingsGraphNodeSpacing.setText("1");
+                if(graphNodeSpacing > 100)
+                	settingsGraphNodeSpacing.setText("100");
+                if(graphXPCeiling < 1)
+                	settingsGraphXPCeiling.setText("1");
+                if(graphXPCeiling > 100000)
+                	settingsGraphXPCeiling.setText("100000");
                 
                 if(pullSize < 0)
                     settingsDataPullSize.setText("0");
@@ -510,7 +594,10 @@ public class GfxWindow extends JPanel implements Runnable
                 tracker.settings.font = selectedFont;
                 tracker.settings.fontSize = Integer.parseInt(settingsFontSize.getText());
                 lineFont = new Font(selectedFont, Font.PLAIN, Integer.parseInt(settingsFontSize.getText()));
+                
                 tracker.settings.graphNodeSpacing = Integer.parseInt(settingsGraphNodeSpacing.getText());
+                tracker.settings.graphXPCeiling = Integer.parseInt(settingsGraphXPCeiling.getText());
+                
                 tracker.settings.pullSize = Integer.parseInt(settingsDataPullSize.getText());
                 tracker.settings.searchSize = Integer.parseInt(settingsDataSearchSize.getText());
                 tracker.settings.debugMode = debugCheckBox.isSelected(); 

@@ -17,7 +17,7 @@ public class SettingsProfile implements Serializable
 	public String font = "Courier New";
 	public int fontSize = 12;
 	
-	public int graphNodeSpacing = 8;
+	public int graphNodeSpacing = 8, graphXPCeiling = 3000;
 	
 	public SettingsProfile(Tracker t)
 	{
@@ -28,6 +28,8 @@ public class SettingsProfile implements Serializable
 	{
 		debugMode = p.debugMode;
 		pullSize = p.pullSize;
+		searchSize = p.searchSize;
+		dataLimitSize = p.dataLimitSize;
 		
 		colorSchemaR = p.colorSchemaR;
 		colorSchemaG = p.colorSchemaG;
@@ -37,5 +39,6 @@ public class SettingsProfile implements Serializable
 		fontSize = p.fontSize;
 		
 		graphNodeSpacing = p.graphNodeSpacing;
+		graphXPCeiling = p.graphXPCeiling;
 	}
 }

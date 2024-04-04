@@ -128,10 +128,11 @@ public class Web
             //InputStream input = new URL(html).openStream();
             //Reader reader = new InputStreamReader(input, "UTF-8");
             //Data data = new Gson().fromJson(reader, Data.class);
-            Document doc = Jsoup.connect(html).ignoreContentType(true).get();
+            Document doc = Jsoup.connect(html).maxBodySize(0).ignoreContentType(true).get();
             Elements tableElements = doc.select("body");
             
             String docJson = doc.text();
+            System.out.println("Pulled data size: " + docJson.length() + " !!!");
             
             int charSize = tracker.settings.dataLimitSize;
             if(docJson.length() < charSize)

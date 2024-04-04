@@ -225,7 +225,7 @@ public class Tracker
             
             System.out.println("web list size: " + web.list.size());
             
-            int highCount = 4000; // Ceiling on graph height 
+            int highCount = settings.graphXPCeiling; // Ceiling on graph height 
             
             //calculate exp change from previous list
             for(int a=0;a<previous.get(0).size();a++)
@@ -244,6 +244,7 @@ public class Tracker
                 		tempEXPDiff = highCount;
                 	}
                 	
+                	//if(prevData.graphPoint != null)
                 	newData.graphPoint = new ArrayList<Double>(prevData.graphPoint);
                     newData.graphPoint.add(0, (double) tempEXPDiff / highCount);
                     
@@ -258,6 +259,7 @@ public class Tracker
         catch(Exception e)
         {
             System.out.println("Web.pullData() error - " + e);
+            e.printStackTrace();
         }
     }
     

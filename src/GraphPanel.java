@@ -90,16 +90,4 @@ public class GraphPanel extends JPanel
         //return min;
     	return 0.0;
     }
-
-    /*public static void main(String[] args) {
-        JFrame frame = new JFrame("Graph Example");
-        frame.setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
-
-        double[] data = {0.5, 0.6, 0.8, 0.7, 0.9, 0.65, 0.7}; // Example data
-        GraphPanel graphPanel = new GraphPanel(data);
-
-        frame.add(graphPanel);
-        frame.setSize(400, 300);
-        frame.setVisible(true);
-    }*/
 }
