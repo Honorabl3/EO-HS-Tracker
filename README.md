@@ -16,7 +16,7 @@ A tool designed to provide relatively accurate XP/HR predictions based on a samp
 # Installation
  1. Install Java (skip this if you already have Java JRE8+ installed).
 	 - https://www.java.com/en/download/
- 2. Download latest EO Highscore Tracker release: https://github.com/Honorabl3/EO-HS-Tracker/
+ 2. [Download latest EO Highscore Tracker release](https://github.com/Honorabl3/EO-HS-Tracker/releases/tag/v0.4)
 
 
 # Changelog
