@@ -22,8 +22,9 @@ public class GfxWindow extends JPanel implements Runnable
     
     int sizeX, sizeY;
     
-    public JPanel xpList, loadingPanel, loadingPanel2, loadingLabel2Panel, topPanel, topLeftPanel, topMiddlePanel, topRightPanel, changelogPanel, settingsPanel;
+    public JPanel xpList, loadingPanel, loadingPanel2, loadingLabel2Panel, loadingLabel3Panel, topPanel, topLeftPanel, topMiddlePanel, topRightPanel, changelogPanel1, changelogPanel2, settingsPanel;
     public JLabel loadingChinaLabel, loadingLabel1, loadingLabel2, loadingLabel3, changelogLabel1, changelogLabel2, updateTimer;
+    public JScrollPane changelogScrollPanel;
     
     //  Buttons
     public JButton infoButton, changelogButton, refreshButton, addButton;
@@ -76,24 +77,40 @@ public class GfxWindow extends JPanel implements Runnable
         topPanel.setVisible(true);
         this.add(topPanel, BorderLayout.NORTH);
         
-        changelogPanel = new JPanel();
-        changelogPanel.setBackground(Color.BLACK);
-        changelogPanel.setSize(500, 300);
-        changelogPanel.setLayout(new BoxLayout(changelogPanel, BoxLayout.Y_AXIS));
-        changelogPanel.setVisible(false);
-        this.add(changelogPanel);
+        changelogPanel1 = new JPanel();
+        changelogPanel1.setBackground(Color.BLACK);
+        changelogPanel1.setSize(700, 360);
+        changelogPanel1.setLayout(new BoxLayout(changelogPanel1, BoxLayout.Y_AXIS));
+        changelogPanel1.setVisible(false);
+        this.add(changelogPanel1);
+        
+        changelogPanel2 = new JPanel();
+        changelogPanel2.setBackground(changelogPanel1.getBackground());
+        changelogPanel2.setSize(changelogPanel1.getSize());
+        changelogPanel2.setLayout(new BoxLayout(changelogPanel2, BoxLayout.Y_AXIS));
+        changelogPanel2.setVisible(true);
+        changelogPanel1.add(changelogPanel2);
+        
+        changelogScrollPanel = new JScrollPane(changelogPanel2);
+        changelogScrollPanel.setVerticalScrollBarPolicy(ScrollPaneConstants.VERTICAL_SCROLLBAR_ALWAYS);
+        JScrollBar verticalScrollBar = changelogScrollPanel.getVerticalScrollBar();
+        verticalScrollBar.setUnitIncrement(16); // Adjust this value to control the speed (higher values scroll faster)
+        verticalScrollBar.setBlockIncrement(64); // Adjust this value to control how much is scrolled on page up/down
+
+        changelogScrollPanel.setBorder(null); // Removes the border
+        changelogPanel1.add(changelogScrollPanel);
         
         changelogLabel1 = new JLabel();
         changelogLabel1.setFont(new Font("Comic Sans MS", Font.BOLD, 28));
         changelogLabel1.setForeground(Color.WHITE);
-        changelogLabel1.setText("<html><p style=\"text-align: center;\"> EO Highscore Tracker v0.3</p></html>");
-        changelogPanel.add(changelogLabel1);
+        changelogLabel1.setText("<html><p style=\"text-align: center;\"> EO Highscore Tracker v0.4</p></html>");
+        changelogPanel2.add(changelogLabel1);
         
         changelogLabel2 = new JLabel();
         changelogLabel2.setFont(new Font("Comic Sans MS", Font.PLAIN, 16));
         changelogLabel2.setForeground(Color.WHITE);
-        changelogLabel2.setText("<html><p>+ Added Settings Panel<br/><ul><li>Grid Color, Font, Font Color, Font Size, and Pull Size options added.</li></ul>= Fixed XP/Rate sometimes displaying wrong value in special cases<br/>= Fixed Manual Reset button not dumping old data<br/><br/>v0.2<br/>+ New Graphical Interface<br/>+ Searchable Player Name Tracking<br/>+ Manual Reset Button Added</p><br/><br/><br/><br/><br/><br/></html>");
-        changelogPanel.add(changelogLabel2);
+        changelogLabel2.setText("<html><p>+ Visual Graphing of XP Activity<br/>+ Settings Panel Modifications<ul><li>Settings now save between sessions</li><li>\"Reset Default\" button added</li><li>\"Graph Node Spacing\", \"Graph XP Ceiling\", \"Data Search Size\" settings added</li></ul><br/>v0.3<br/>+ Added Settings Panel<br/><ul><li>Grid Color, Font, Font Color, Font Size, and Pull Size options added.</li></ul>= Fixed XP/Rate sometimes displaying wrong value in special cases<br/>= Fixed Manual Reset button not dumping old data<br/><br/>v0.2<br/>+ New Graphical Interface<br/>+ Searchable Player Name Tracking<br/>+ Manual Reset Button Added</p><br/><br/></html>");
+        changelogPanel2.add(changelogLabel2);
         
         
         
@@ -135,22 +152,22 @@ public class GfxWindow extends JPanel implements Runnable
             @Override
             public void actionPerformed(ActionEvent e) {
                 // Define the action to be performed when the button is clicked
-                if(changelogPanel.isVisible())
+                if(changelogPanel1.isVisible())
                 {
-                    changelogPanel.setVisible(false);
+                    changelogPanel1.setVisible(false);
                     settingsPanel.setVisible(false);
                     
                     xpList.setVisible(true);
                 }
                 else
                 {
-                    changelogPanel.setLocation((sizeX/2)-(changelogPanel.getWidth()/2), (sizeY/2)-(changelogPanel.getHeight()/2));
+                    changelogPanel1.setLocation((sizeX/2)-(changelogPanel1.getWidth()/2), (sizeY/2)-(changelogPanel1.getHeight()/2));
                     //changelogPanel.setLocation(tracker.panel.getContentPane().getWidth(), tracker.panel.getContentPane().getHeight());
                     //changelogPanel.setLocation(50, 50);
                     xpList.setVisible(false);
                     settingsPanel.setVisible(false);
                     
-                    changelogPanel.setVisible(true);
+                    changelogPanel1.setVisible(true);
                 }
             }
         });
@@ -623,7 +640,7 @@ public class GfxWindow extends JPanel implements Runnable
             {
                 if(settingsPanel.isVisible())
                 {
-                    changelogPanel.setVisible(false);
+                    changelogPanel1.setVisible(false);
                     settingsPanel.setVisible(false);
                     
                     xpList.setVisible(true);
@@ -633,7 +650,7 @@ public class GfxWindow extends JPanel implements Runnable
                     settingsPanel.setLocation((sizeX/2)-(settingsPanel.getWidth()/2), (sizeY/2)-(settingsPanel.getHeight()/2));
                     
                     xpList.setVisible(false);
-                    changelogPanel.setVisible(false);
+                    changelogPanel1.setVisible(false);
                     
                     settingsPanel.setVisible(true);
                 }

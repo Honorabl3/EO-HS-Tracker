@@ -315,7 +315,7 @@ public class Tracker
 	                    
 	                    JPanel tempPanel = new JPanel();
 	                    tempPanel.setBackground(Color.BLACK);
-	                    tempPanel.setBorder(BorderFactory.createMatteBorder(1, 0, 1, 0, panel.colorSchemaColor)); // Top border
+	                    tempPanel.setBorder(BorderFactory.createMatteBorder(1, 0, 1, 0, panel.colorSchemaColor));
 	                    tempPanel.setPreferredSize(new Dimension(tempLabel.getX()+16, tempLabel.getY()));   //  +16 is size of red x icon image
 	                    tempPanel.setLayout(new BoxLayout(tempPanel, BoxLayout.X_AXIS));
 	                    tempPanel.setAlignmentX(Component.LEFT_ALIGNMENT);
@@ -385,6 +385,28 @@ public class Tracker
 	                    
 	                    panel.xpList.add(tempPanel);
 	                    panel.xpList.setPreferredSize(panel.xpList.getPreferredSize());
+	                    
+	                    
+	                    if(settings.debugMode)
+	                    {
+	                    	String debugTempString = "[" + tempEntry.name + "] Graph [" + tempEntry.graphPoint.size() + " data nodes]";
+		                    JLabel debugTempLabel = new JLabel(debugTempString);
+		                    debugTempLabel.setFont(panel.lineFont);
+		                    debugTempLabel.setForeground(Color.WHITE);
+		                    
+		                    JPanel debugTempPanel = new JPanel();
+		                    debugTempPanel.setBackground(Color.BLACK);
+		                    debugTempPanel.setBorder(BorderFactory.createMatteBorder(1, 0, 1, 0, Color.RED));
+		                    debugTempPanel.setPreferredSize(debugTempPanel.getPreferredSize());
+		                    debugTempPanel.setLayout(new BoxLayout(debugTempPanel, BoxLayout.X_AXIS));
+		                    debugTempPanel.setAlignmentX(Component.LEFT_ALIGNMENT);
+		                    debugTempPanel.setVisible(true);
+		                    
+		                    debugTempPanel.add(debugTempLabel);
+		                    
+		                    panel.xpList.add(debugTempPanel);
+		                    panel.xpList.setPreferredSize(panel.xpList.getPreferredSize());
+	                    }
 	                    
 	                    System.out.println(tempString);
 	                }
