@@ -41,6 +41,7 @@ Instruction for Monster Log:
 	- [Fix] Monster Log reading new chatline entries which were changed by EO update.
 	- [Fix] Lazy hotfix to remove EODash pull request.
 - [V0.5] Sep. 10, 2024
+	- [Added] API access to random EO data from eor-api.exile-studios.com.
 	- [Added] Monster Log
 		- [Feature] Live Progress data of monsters you kill.
 		- [Feature] Live progress of picked up or harvested items.

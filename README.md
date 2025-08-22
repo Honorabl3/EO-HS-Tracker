@@ -1,5 +1,5 @@
 # Endless Online High Score Tracker
-<small>Powered by eodash.com</small>
+<small>Powered by ~~EODash.com~~ eor-api.exile-studios.com</small>
 A tool designed to provide relatively accurate XP/HR predictions based on a sample size of data. In addition to the XP/HR feature, it also includes a graph showcasing continuous activity. The tool allows for specific tracking of character names and offers a wide range of options to personalize to your needs.
  
 
@@ -8,9 +8,11 @@ A tool designed to provide relatively accurate XP/HR predictions based on a samp
 
 ![alt text](https://github.com/Honorabl3/EO-HS-Tracker/blob/main/EO-HS-Tracker/images/picture2.png?raw=true)
 
+![alt text](https://github.com/Honorabl3/EO-HS-Tracker/blob/main/EO-HS-Tracker/images/picture3.png?raw=true)
+
 # How To Use
  1. Run debug.bat
- 2. Wait for data to be pulled from eodash website.
+ 2. ~~Wait for data to be pulled from eodash website.~~
  3. View data and changes overtime.
 
 # Installation
@@ -21,6 +23,17 @@ A tool designed to provide relatively accurate XP/HR predictions based on a samp
 
 
 # Changelog
+ - [V0.5.1] Sep 22, 2025
+	- [Fix] Monster Log reading new chatline entries which were changed by EO update.
+	- [Fix] Lazy hotfix to remove EODash pull request.
+ - [V0.5] Sep. 10, 2024
+	- [Added] API access to random EO data from eor-api.exile-studios.com.
+	- [Added] Monster Log
+		- [Feature] Live Progress data of monsters you kill.
+		- [Feature] Live progress of picked up or harvested items.
+		- [Feature] Monster info data when clicking on image of monster.
+	- [Fix] GUI formatting issues in some panels.
+	- [Added] Draw Graph Inactivity setting to keep graph lines from being removed from inactivity.
  - [V0.4] Apr. 3rd, 2024
 	- [Added] Line graph for each entry that simulates activity based off data of exp change data.
 	- [Added] Modifications to the 'Settings' tab.
@@ -55,4 +68,4 @@ Running the Debug.bat file executes the 'EO-HS-Tracker.jar' file, which uses two
 
 
 
-Written by player "China" 2024©, all rights reserved.
+Written by player "China" 2025©, all rights reserved.
