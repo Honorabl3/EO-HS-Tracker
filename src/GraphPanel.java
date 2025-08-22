@@ -48,13 +48,25 @@ public class GraphPanel extends JPanel
             
             // Determine the color based on the angle
             Color lineColor;
-            if (angle > 0) {
+            if (angle > 0)
+            {
                 // Angle is positive, line is going up
                 lineColor = Color.GREEN;
-            } else if (angle < 0) {
+            }
+            
+            else if (angle < 0)
+            {
                 // Angle is negative, line is going down
                 lineColor = Color.RED;
-            } else {
+            }
+            
+            else if(data[i] == 0.0 && data[i+1] == 0.0)	//	If the value from between node 'a' and node 'b' is 0
+            {
+            	lineColor = Color.RED;
+            }
+            
+            else
+            {
                 // Angle is zero, line is horizontal
                 lineColor = Color.GREEN;
             }

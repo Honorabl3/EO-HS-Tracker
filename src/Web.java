@@ -1,5 +1,10 @@
 import java.io.IOException;
 import java.util.List;
+
+import java.awt.Image;
+import javax.imageio.ImageIO;
+import javax.swing.ImageIcon;
+
 import java.util.ArrayList;
 import java.util.LinkedList;
 
@@ -19,6 +24,7 @@ import com.google.gson.JsonObject;
 import com.google.gson.JsonParser;
 
 import java.io.InputStream;
+import java.net.HttpURLConnection;
 import java.net.URL;
 import java.io.Reader;
 import java.io.InputStreamReader;
@@ -64,14 +70,225 @@ public class Web
         tracker = t;
     }
     
+    public ImageIcon getItemImage(int id)
+    {
+        String imageUrl = "https://eor-api.exile-studios.com/api/items/" + id + "/graphic";
+        
+        try
+        {
+            // Create a connection to the image URL
+            URL url = new URL(imageUrl);
+            HttpURLConnection connection = (HttpURLConnection) url.openConnection();
+            connection.setRequestMethod("GET");
+            connection.setDoInput(true);
+            connection.connect();
+
+            // Check if the response code is HTTP OK (200)
+            if (connection.getResponseCode() == HttpURLConnection.HTTP_OK) {
+                // Get input stream from the connection
+                InputStream inputStream = connection.getInputStream();
+
+                // Read the image
+                Image image = ImageIO.read(inputStream);
+
+                // Close the stream
+                inputStream.close();
+
+                // Return the ImageIcon if image is loaded
+                if (image != null)
+                {
+                    return new ImageIcon(image);
+                }
+                
+                else
+                {
+                    System.out.println("Failed to load image.");
+                    return null;
+                }
+            }
+            
+            else
+            {
+                System.out.println("Failed to connect. Response code: " + connection.getResponseCode());
+                return null;
+            }
+        }
+        
+        catch (Exception e)
+        {
+            System.out.println("Web.getMonsterImage() error - " + e);
+            e.printStackTrace();
+            return null;
+        }
+    }
+    
+    public boolean loadItemData()
+    {
+    	//	Wipe all item data from monsterPanel
+    	tracker.panel.monsterPanel.itemData.clear();
+    	
+    	try
+    	{
+    		String html = "https://eor-api.exile-studios.com/api/items/dump";
+            
+            Document doc = Jsoup.connect(html).maxBodySize(0).ignoreContentType(true).get();
+            Elements tableElements = doc.select("body");
+            
+            String docJson = doc.text();
+    
+            // Parse the JSON string directly into a JsonArray
+            JsonParser jsonParser = new JsonParser();
+            JsonArray jsonArray = jsonParser.parse(docJson).getAsJsonArray();
+
+            // Iterate through the array and access each element
+            for (JsonElement element : jsonArray)
+            {
+            	//ArrayList<DropData> tempRecipe = new ArrayList<DropData>();
+            	
+            	/*JsonObject elementObject = element.getAsJsonObject();
+            	if (elementObject.has("ingredientFor") && elementObject.get("ingredientFor").isJsonArray())
+            	{
+                    JsonArray dropArray = elementObject.getAsJsonArray("drops");
+            	
+	                for (JsonElement drop : dropArray)
+	                {
+	                	JsonObject dropObj = drop.getAsJsonObject();
+	                	tempRecipe.add(new DropData(dropObj.get("itemID").getAsInt(), dropObj.get("drop_percent").getAsFloat()));
+	                }
+            	}*/
+            	
+            	ItemData itemEntry = new ItemData(element.getAsJsonObject().get("id").getAsInt(), element.getAsJsonObject().get("name").getAsString(), element.getAsJsonObject().get("item_unique").getAsInt(), element.getAsJsonObject().get("weight").getAsInt(), element.getAsJsonObject().get("sell_price").getAsInt(), element.getAsJsonObject().get("hit_rate").getAsInt(), element.getAsJsonObject().get("min_damage").getAsInt(), element.getAsJsonObject().get("max_damage").getAsInt());
+            	tracker.panel.monsterPanel.itemData.put(itemEntry.name, itemEntry);
+            }
+            
+            System.out.println("loadItemData - [Loaded " + tracker.panel.monsterPanel.itemData.size() + " entries]!");
+		}
+		    	
+    	catch(Exception e)
+    	{
+    		System.out.println("Web.loadItemData() error - " + e);
+    		e.printStackTrace();
+    		
+    		return false;
+    	}
+    	
+    	return true;
+    }
+    
+    public ImageIcon getMonsterImage(int id)
+    {
+        String imageUrl = "https://eor-api.exile-studios.com/api/npcs/" + id + "/graphic";
+        
+        try
+        {
+            // Create a connection to the image URL
+            URL url = new URL(imageUrl);
+            HttpURLConnection connection = (HttpURLConnection) url.openConnection();
+            connection.setRequestMethod("GET");
+            connection.setDoInput(true);
+            connection.connect();
+
+            // Check if the response code is HTTP OK (200)
+            if (connection.getResponseCode() == HttpURLConnection.HTTP_OK) {
+                // Get input stream from the connection
+                InputStream inputStream = connection.getInputStream();
+
+                // Read the image
+                Image image = ImageIO.read(inputStream);
+
+                // Close the stream
+                inputStream.close();
+
+                // Return the ImageIcon if image is loaded
+                if (image != null)
+                {
+                    return new ImageIcon(image);
+                }
+                
+                else
+                {
+                    System.out.println("Failed to load image.");
+                    return null;
+                }
+            }
+            
+            else
+            {
+                System.out.println("Failed to connect. Response code: " + connection.getResponseCode());
+                return null;
+            }
+        }
+        
+        catch (Exception e)
+        {
+            System.out.println("Web.getMonsterImage() error - " + e);
+            e.printStackTrace();
+            return null;
+        }
+    }
+    
+    public boolean loadMonsterData()
+    {
+    	//	Wipe all monster data from monsterPanel
+    	tracker.panel.monsterPanel.monsterData.clear();
+    	
+    	try
+    	{
+    		String html = "https://eor-api.exile-studios.com/api/npcs/dump";
+            
+            Document doc = Jsoup.connect(html).maxBodySize(0).ignoreContentType(true).get();
+            Elements tableElements = doc.select("body");
+            
+            String docJson = doc.text();
+    
+            // Parse the JSON string directly into a JsonArray
+            JsonParser jsonParser = new JsonParser();
+            JsonArray jsonArray = jsonParser.parse(docJson).getAsJsonArray();
+
+            // Iterate through the array and access each element
+            for (JsonElement element : jsonArray)
+            {
+            	ArrayList<DropData> tempDrop = new ArrayList<DropData>();
+            	
+            	JsonObject elementObject = element.getAsJsonObject();
+            	if (elementObject.has("drops") && elementObject.get("drops").isJsonArray())
+            	{
+                    JsonArray dropArray = elementObject.getAsJsonArray("drops");
+            	
+	                for (JsonElement drop : dropArray)
+	                {
+	                	JsonObject dropObj = drop.getAsJsonObject();
+	                	tempDrop.add(new DropData(dropObj.get("itemID").getAsInt(), dropObj.get("drop_percent").getAsFloat()));
+	                }
+            	}
+            	
+            	MonsterData monsterEntry = new MonsterData(element.getAsJsonObject().get("id").getAsInt(), element.getAsJsonObject().get("name").getAsString(), element.getAsJsonObject().get("experience").getAsInt(), element.getAsJsonObject().get("npc_respawn_secs").getAsInt(), element.getAsJsonObject().get("boss").getAsInt(), element.getAsJsonObject().get("child").getAsInt(), element.getAsJsonObject().get("level").getAsInt(), element.getAsJsonObject().get("behavior").getAsInt(), element.getAsJsonObject().get("min_damage").getAsInt(), element.getAsJsonObject().get("max_damage").getAsInt(), element.getAsJsonObject().get("hp").getAsInt(), element.getAsJsonObject().get("accuracy").getAsInt(), element.getAsJsonObject().get("evasion").getAsInt(), element.getAsJsonObject().get("armor").getAsInt(), element.getAsJsonObject().get("critical_chance").getAsInt(), tempDrop);
+                tracker.panel.monsterPanel.monsterData.put(monsterEntry.name, monsterEntry);
+            }
+            
+            System.out.println("loadMonsterData - [Loaded " + tracker.panel.monsterPanel.monsterData.size() + " entries]!");
+    	}
+    	
+    	catch(Exception e)
+    	{
+    		System.out.println("Web.loadMonsterData() error - " + e);
+    		e.printStackTrace();
+    		
+    		return false;
+    	}
+    	
+    	
+    	return true;
+    }
+    
     public void recompile()
     {
         list.clear();
         
-        // Limit to the first 1000 entries
+        // Limit to the first X entries
         int limit = Math.min(tracker.settings.pullSize, jsonArray.size());
         
-        // Iterate through the first 1000 entries
+        // Iterate through the first X amount of entries
         for (int i = 0; i < limit; i++)
         {
             JsonElement jsonElement = jsonArray.get(i);
@@ -147,16 +364,16 @@ public class Web
             //String jsonString = doc.text() + "}, ...]\"},";
     
             // Using Gson to parse JSON
-            Gson gson = new Gson();
+            //Gson gson = new Gson();
             JsonParser jsonParser = new JsonParser();
             
             // Parse the JSON string to a JsonArray
             jsonArray = (JsonArray) jsonParser.parse(jsonString).getAsJsonObject().get("players");
             
-            // Limit to the first 1000 entries
+            // Limit to the first X amount of entries
             int limit = Math.min(tracker.settings.pullSize, jsonArray.size());
             
-            // Iterate through the first 1000 entries
+            // Iterate through the first X amount of entries
             for (int i = 0; i < limit; i++)
             {
                 JsonElement jsonElement = jsonArray.get(i);
@@ -207,6 +424,7 @@ public class Web
         catch(Exception e)
         {
             System.out.println("Web.retrieve() error - " + e);
+            e.printStackTrace();
         }
     }
 }

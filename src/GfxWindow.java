@@ -1,5 +1,6 @@
 import javax.swing.*;
 import javax.swing.border.Border;
+import javax.swing.filechooser.FileNameExtensionFilter;
 import javax.swing.text.AbstractDocument;
 import javax.swing.text.DocumentFilter;
 import javax.swing.text.AttributeSet;
@@ -10,6 +11,7 @@ import java.util.regex.Matcher;
 import java.awt.*;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
+import java.io.File;
 import java.awt.event.*;
 
 import java.util.ArrayList;
@@ -23,28 +25,34 @@ public class GfxWindow extends JPanel implements Runnable
     int sizeX, sizeY;
     
     public JPanel xpList, loadingPanel, loadingPanel2, loadingLabel2Panel, loadingLabel3Panel, topPanel, topLeftPanel, topMiddlePanel, topRightPanel, changelogPanel1, changelogPanel2, settingsPanel;
+    public MonsterPanel monsterPanel;
     public JLabel loadingChinaLabel, loadingLabel1, loadingLabel2, loadingLabel3, changelogLabel1, changelogLabel2, updateTimer;
     public JScrollPane changelogScrollPanel;
     
     //  Buttons
-    public JButton infoButton, changelogButton, refreshButton, addButton;
+    public JButton infoButton, changelogButton, monsterButton, refreshButton, addButton;
     
     //  SETTINGS PANEL
-    public JLabel settingsButton, settingsLabel1, settingsFontSizeLabel, settingsGraphLabel1, settingsGraphLabel2, settingsDataLabel1, settingsSearchSize1Label;   //  settingsButton is a Label that behaves as a button
-    public JPanel settingsColorSchemaPanel, settingsGraphPanel, settingsDataPanel, settingsBottomPanel;
+    public JLabel settingsButton, settingsLabel1, settingsFontSizeLabel, settingsGraphLabel1, settingsGraphLabel2, settingsMonsterLabel1, settingsMonsterLabel2, settingsDataLabel1, settingsSearchSize1Label;   //  settingsButton is a Label that behaves as a button
+    public JPanel settingsColorSchemaPanel, settingsGraphPanel, settingsMonsterPanel, settingsDataPanel, settingsBottomPanel;
     public Color colorSchemaColor;
-    public JTextField colorSchema1TextField, colorSchema2TextField, colorSchema3TextField, settingsFontSize, settingsGraphNodeSpacing, settingsGraphXPCeiling, settingsDataPullSize, settingsDataSearchSize;
+    public JTextField colorSchema1TextField, colorSchema2TextField, colorSchema3TextField, settingsFontSize, settingsGraphNodeSpacing, settingsGraphXPCeiling, settingsMonsterChatlog, settingsDataPullSize, settingsDataSearchSize;
     public JButton applySettingsButton, resetSettingsButton;
     public JComboBox fontComboBox;
-    public JCheckBox debugCheckBox;
+    public JCheckBox printConsoleCheckBox, debugCheckBox, drawInactiveGraphCheckBox, stayOnTopCheckBox;
+    
+    public boolean drawApplyArrowIndicator;
     
     //  ICONS
     
     public JTextField addTextField;
-    public ImageIcon redXIcon, settingsIcon, chinaIcon1, chinaIcon2, logoIcon;
+    public ImageIcon redXIcon, settingsIcon, chinaIcon1, chinaIcon2, logoIcon, attentionIcon;
     
     //  FONTS
-    public Font lineFont;
+    public Font lineFont;//, monsterSmallFont, monsterMediumFont;
+    
+    //	BORDERS
+    public Border redStrokeBorder, thickRedStrokeBorder;
     
     
     public ArrayList<JLabel> stringList;
@@ -65,19 +73,33 @@ public class GfxWindow extends JPanel implements Runnable
         chinaIcon1 = new ImageIcon("EO-HS-Tracker/images/china1.png");
         chinaIcon2 = new ImageIcon("EO-HS-Tracker/images/china2.png");
         logoIcon = new ImageIcon("EO-HS-Tracker/images/logo.png");
+        attentionIcon = new ImageIcon("EO-HS-Tracker/images/attention.png");
+        
+        redStrokeBorder = BorderFactory.createDashedBorder(Color.RED, 16, 8);
+        thickRedStrokeBorder = BorderFactory.createCompoundBorder(BorderFactory.createMatteBorder(1, 1, 1, 1, Color.RED), redStrokeBorder);
+        
+        //lineFont = new Font("Courier New", Font.PLAIN, 12);
+        lineFont = new Font(tracker.settings.font, Font.PLAIN, tracker.settings.fontSize);
+        
+        //monsterSmallFont = new Font("Courier New", Font.PLAIN, 9);
+        //monsterMediumFont = new Font("Courier New", Font.PLAIN, 11);
         
         setBackground(Color.BLACK);
         setPreferredSize(new Dimension(sizeX, sizeY));
-        setLayout(new BorderLayout());
+        setLayout(new BoxLayout(this, BoxLayout.Y_AXIS));
+        setAlignmentX(Component.LEFT_ALIGNMENT);
         
         topPanel = new JPanel();
+        topPanel.setAlignmentX(Component.LEFT_ALIGNMENT);
         topPanel.setBackground(Color.LIGHT_GRAY);
         topPanel.setPreferredSize(new Dimension(300, 20));
+        topPanel.setMaximumSize(new Dimension(Integer.MAX_VALUE, 20));
         topPanel.setLayout(new BorderLayout());
         topPanel.setVisible(true);
-        this.add(topPanel, BorderLayout.NORTH);
+        this.add(topPanel);
         
         changelogPanel1 = new JPanel();
+        changelogPanel1.setAlignmentX(Component.LEFT_ALIGNMENT);
         changelogPanel1.setBackground(Color.BLACK);
         changelogPanel1.setSize(700, 360);
         changelogPanel1.setLayout(new BoxLayout(changelogPanel1, BoxLayout.Y_AXIS));
@@ -103,23 +125,33 @@ public class GfxWindow extends JPanel implements Runnable
         changelogLabel1 = new JLabel();
         changelogLabel1.setFont(new Font("Comic Sans MS", Font.BOLD, 28));
         changelogLabel1.setForeground(Color.WHITE);
-        changelogLabel1.setText("<html><p style=\"text-align: center;\"> EO Highscore Tracker v0.4</p></html>");
+        changelogLabel1.setText("<html><p style=\"text-align: center;\"> EO Highscore Tracker</p></html>");
         changelogPanel2.add(changelogLabel1);
         
         changelogLabel2 = new JLabel();
         changelogLabel2.setFont(new Font("Comic Sans MS", Font.PLAIN, 16));
         changelogLabel2.setForeground(Color.WHITE);
-        changelogLabel2.setText("<html><p>+ Visual Graphing of XP Activity<br/>+ Settings Panel Modifications<ul><li>Settings now save between sessions</li><li>\"Reset Default\" button added</li><li>\"Graph Node Spacing\", \"Graph XP Ceiling\", \"Data Search Size\" settings added</li></ul><br/>v0.3<br/>+ Added Settings Panel<br/><ul><li>Grid Color, Font, Font Color, Font Size, and Pull Size options added.</li></ul>= Fixed XP/Rate sometimes displaying wrong value in special cases<br/>= Fixed Manual Reset button not dumping old data<br/><br/>v0.2<br/>+ New Graphical Interface<br/>+ Searchable Player Name Tracking<br/>+ Manual Reset Button Added</p><br/><br/></html>");
+        changelogLabel2.setText("<html><p>v0.5.1<br/>= Fixes for things that an EO update broke<br/>= Lazy hotfix to remove EODash pull request<br/><br/>v0.5 (PRE-RELEASE)<br/>+ New Monster Log<ul><li>Live progress data of Monster Kills</li><li>Live progress data of items you harvest or pick up</li><li>Extremely accurate XP/HR stopwatch/timer</ul>= Fixed GUI resizing panel mismatches in some circumstances<br/>+ Setting added for graph line to continue drawing inactivity<br/><br/>v0.4<br/>+ Visual Graphing of XP Activity<br/>+ Settings Panel Modifications<ul><li>Settings now save between sessions</li><li>\"Reset Default\" button added</li><li>\"Graph Node Spacing\", \"Graph XP Ceiling\", \"Data Search Size\" settings added</li></ul><br/>v0.3<br/>+ Added Settings Panel<br/><ul><li>Grid Color, Font, Font Color, Font Size, and Pull Size options added.</li></ul>= Fixed XP/Rate sometimes displaying wrong value in special cases<br/>= Fixed Manual Reset button not dumping old data<br/><br/>v0.2<br/>+ New Graphical Interface<br/>+ Searchable Player Name Tracking<br/>+ Manual Reset Button Added</p><br/><br/></html>");
         changelogPanel2.add(changelogLabel2);
         
+        
+        //	MONSTER LOG PANEL
+        
+        monsterPanel = new MonsterPanel(tracker);
+        monsterPanel.setAlignmentX(Component.LEFT_ALIGNMENT);
+        monsterPanel.setBackground(Color.decode("#000000"));
+        monsterPanel.setSize(getPreferredSize());
+        monsterPanel.setPreferredSize(getPreferredSize());
+        monsterPanel.setVisible(false);
+        this.add(monsterPanel);
         
         
         // TOP LEFT EDGE PANEL
         
         topLeftPanel = new JPanel();
         topLeftPanel.setBackground(Color.LIGHT_GRAY);
-        topLeftPanel.setPreferredSize(new Dimension(155, 20));
-        topLeftPanel.setLayout(new BorderLayout());
+        topLeftPanel.setPreferredSize(new Dimension(260, 20));
+        topLeftPanel.setLayout(new BoxLayout(topLeftPanel, BoxLayout.X_AXIS));
         topLeftPanel.setVisible(true);
         topPanel.add(topLeftPanel, BorderLayout.WEST);
         
@@ -127,7 +159,7 @@ public class GfxWindow extends JPanel implements Runnable
         
         infoButton = new JButton("?");
         infoButton.setSize(infoButton.getPreferredSize());
-        topLeftPanel.add(infoButton, BorderLayout.WEST);
+        topLeftPanel.add(infoButton);
         
         // Add an ActionListener to the button
         infoButton.addActionListener(new ActionListener()
@@ -144,7 +176,7 @@ public class GfxWindow extends JPanel implements Runnable
         // CHANGELOG BUTTON
         changelogButton = new JButton("Changelog");
         changelogButton.setSize(changelogButton.getPreferredSize());
-        topLeftPanel.add(changelogButton, BorderLayout.CENTER);
+        topLeftPanel.add(changelogButton);
         
         // Add an ActionListener to the button
         changelogButton.addActionListener(new ActionListener()
@@ -155,6 +187,7 @@ public class GfxWindow extends JPanel implements Runnable
                 if(changelogPanel1.isVisible())
                 {
                     changelogPanel1.setVisible(false);
+                    monsterPanel.setVisible(false);
                     settingsPanel.setVisible(false);
                     
                     xpList.setVisible(true);
@@ -165,6 +198,7 @@ public class GfxWindow extends JPanel implements Runnable
                     //changelogPanel.setLocation(tracker.panel.getContentPane().getWidth(), tracker.panel.getContentPane().getHeight());
                     //changelogPanel.setLocation(50, 50);
                     xpList.setVisible(false);
+                    monsterPanel.setVisible(false);
                     settingsPanel.setVisible(false);
                     
                     changelogPanel1.setVisible(true);
@@ -172,12 +206,49 @@ public class GfxWindow extends JPanel implements Runnable
             }
         });
         
+        // MONSTER LOG BUTTON
+        monsterButton = new JButton("Monster Log");
+        monsterButton.setSize(monsterButton.getPreferredSize());
+        topLeftPanel.add(monsterButton);
+        
+        // Add an ActionListener to the button
+        monsterButton.addActionListener(new ActionListener()
+        {
+            @Override
+            public void actionPerformed(ActionEvent e)
+            {
+                // Define the action to be performed when the button is clicked
+                if(monsterPanel.isVisible())
+                {
+                	monsterPanel.setVisible(false);
+                    changelogPanel1.setVisible(false);
+                    settingsPanel.setVisible(false);
+                    
+                    xpList.setVisible(true);
+                }
+                
+                else
+                {
+                	monsterPanel.setLocation((sizeX/2)-(monsterPanel.getWidth()/2), (sizeY/2)-(monsterPanel.getHeight()/2));
+                    //changelogPanel.setLocation(tracker.panel.getContentPane().getWidth(), tracker.panel.getContentPane().getHeight());
+                    //changelogPanel.setLocation(50, 50);
+                    xpList.setVisible(false);
+                    settingsPanel.setVisible(false);
+                    changelogPanel1.setVisible(false);
+                    
+                    monsterPanel.setVisible(true);
+                }
+            }
+        });
+        
         
         //  SETTINGS PANEL
         
+        drawApplyArrowIndicator = false;
         colorSchemaColor = new Color(tracker.settings.colorSchemaR, tracker.settings.colorSchemaG, tracker.settings.colorSchemaB);
         
         settingsPanel = new JPanel();
+        settingsPanel.setAlignmentX(Component.LEFT_ALIGNMENT);
         settingsPanel.setBackground(Color.BLACK);
         settingsPanel.setSize(600, 360);
         settingsPanel.setLayout(new BoxLayout(settingsPanel, BoxLayout.Y_AXIS));
@@ -256,8 +327,6 @@ public class GfxWindow extends JPanel implements Runnable
             }
         });
         
-        //lineFont = new Font("Courier New", Font.PLAIN, 12);
-        lineFont = new Font(tracker.settings.font, Font.PLAIN, tracker.settings.fontSize);
         // Create an array of strings to populate the combo box
         String[] fontList = {"Courier New", "Lucida Console", "Monaco", "Consolas", "Inconsolata", "Menlo", "Liberation Mono", "DejaVu Sans Mono", "Source Code Pro"};
 
@@ -395,6 +464,12 @@ public class GfxWindow extends JPanel implements Runnable
         settingsGraphXPCeiling.setPreferredSize(new Dimension(40, 20));
         settingsGraphPanel.add(settingsGraphXPCeiling);
         
+        drawInactiveGraphCheckBox = new JCheckBox("Draw Inactivity");
+        drawInactiveGraphCheckBox.setSelected(tracker.settings.drawInactiveGraph);
+        drawInactiveGraphCheckBox.setBackground(settingsGraphPanel.getBackground());
+        drawInactiveGraphCheckBox.setForeground(Color.WHITE);
+        settingsGraphPanel.add(drawInactiveGraphCheckBox);
+        
         ((AbstractDocument)settingsGraphXPCeiling.getDocument()).setDocumentFilter(new DocumentFilter()
         {
             Pattern regEx = Pattern.compile("\\d*");
@@ -411,7 +486,158 @@ public class GfxWindow extends JPanel implements Runnable
             }
         });
         
-        settingsDataPanel = new JPanel();
+        settingsMonsterPanel = new JPanel();
+        settingsMonsterPanel.setBackground(Color.BLACK);
+        settingsMonsterPanel.setLayout(new FlowLayout(FlowLayout.LEFT));
+        settingsMonsterPanel.setPreferredSize(settingsPanel.getPreferredSize());
+        settingsPanel.add(settingsMonsterPanel);
+        
+        settingsMonsterLabel2 = new JLabel("");
+        settingsMonsterLabel2.setFont(new Font("Comic Sans MS", Font.BOLD, 16));
+        settingsMonsterLabel2.setForeground(Color.WHITE);
+        settingsMonsterLabel2.setText("<html><p style=\"text-align: left;\">Chatlog Directory </p></html>");
+        settingsMonsterPanel.add(settingsMonsterLabel2);
+        
+        // Add MouseListener to the label
+        settingsMonsterLabel2.addMouseListener(new MouseAdapter()
+        {
+            @Override
+            public void mouseClicked(MouseEvent e)
+            {
+            	JOptionPane.showMessageDialog(settingsPanel, "Monster Log will not function unless these steps are satisfied.\n1. Open EConfig.exe > Navigate to the Chat tab > [Enable] \"Log chat file\" option.\n2. Ensure your chatlog file is generating data in your EO directory.\n3. Select the directory of the chatlog inside the XP tracker tool.\n\n\nTroubleshooting:\n\"My Endless Online is not generating a chatlog!\"\nConsider testing Endless Online with zip download as opposed to installation.");
+            	//JOptionPane.showMessageDialog(settingsPanel, "When pulling in data, this field represents the amount\n of entries it's allowed to search for the \"specific player\" list.\nBy default the value is 5000, the higher the value the\n more processing must be done to find the data.");
+            }
+            
+            @Override
+            public void mouseEntered(MouseEvent e)
+            {
+            	settingsMonsterLabel2.setForeground(Color.RED);
+            }
+            
+            @Override
+            public void mouseExited(MouseEvent e)
+            {
+            	settingsMonsterLabel2.setForeground(Color.WHITE);
+            }
+        });
+        
+        Border directoryBorder = BorderFactory.createLineBorder(Color.WHITE, 2);
+        
+        // Create a label to show the selected directory path
+        settingsMonsterChatlog = new JTextField(tracker.settings.chatLogDirectory);
+        settingsMonsterChatlog.setMinimumSize(new Dimension(360, settingsMonsterChatlog.getPreferredSize().height));
+        settingsMonsterChatlog.setPreferredSize(new Dimension(360, settingsMonsterChatlog.getPreferredSize().height));
+        settingsMonsterChatlog.setBackground(Color.BLACK);
+        settingsMonsterChatlog.setForeground(Color.WHITE);
+        settingsMonsterChatlog.setBorder(directoryBorder);
+        settingsMonsterPanel.add(settingsMonsterChatlog);
+        
+        settingsMonsterChatlog.addFocusListener(new FocusListener()
+        {
+            @Override
+            public void focusGained(FocusEvent e)
+            {
+            	if(settingsMonsterChatlog.getText().equalsIgnoreCase("No directory selected.."))
+                	settingsMonsterChatlog.setText("");
+            }
+
+            @Override
+            public void focusLost(FocusEvent e)
+            {
+                if(settingsMonsterChatlog.getText().equalsIgnoreCase("") || !settingsMonsterChatlog.getText().toLowerCase().endsWith(".txt"))
+                	settingsMonsterChatlog.setText("No directory selected..");
+                else
+                {
+                	drawApplyArrowIndicator = true;
+                	applySettingsButton.setBorder(thickRedStrokeBorder);
+                }
+            }
+        });
+
+        
+        // Create a button to open the directory chooser
+        JButton selectDirectoryButton = new JButton("Select");
+        settingsMonsterPanel.add(selectDirectoryButton);
+        
+        // Add an ActionListener to the button to open the JFileChooser
+        selectDirectoryButton.addActionListener(new ActionListener()
+        {
+            @Override
+            public void actionPerformed(ActionEvent e)
+            {
+            	if(settingsMonsterPanel.getBorder() != null)
+            		settingsMonsterPanel.setBorder(null);
+                // Create a JFileChooser and set it to directories only mode
+                JFileChooser fileChooser = new JFileChooser();
+                fileChooser.setPreferredSize(new Dimension(600, 600));
+                fileChooser.setFileHidingEnabled(false);
+                
+                // Set the filter for .txt files only
+                FileNameExtensionFilter filter = new FileNameExtensionFilter("Text Files (.txt)", "txt");
+                fileChooser.setFileFilter(filter);
+                
+                // Open the dialog to select a directory
+                int returnValue = fileChooser.showOpenDialog(null);
+
+                // If the user selects a directory, show the selected path in the label
+                if (returnValue == JFileChooser.APPROVE_OPTION)
+                {
+                    File selectedDirectory = fileChooser.getSelectedFile();
+                    settingsMonsterChatlog.setText(selectedDirectory.getAbsolutePath());
+                    
+                    drawApplyArrowIndicator = true;
+                    applySettingsButton.setBorder(thickRedStrokeBorder);
+                }
+            }
+        });
+        
+        settingsDataPanel = new JPanel()
+        {
+        	@Override
+        	protected void paintComponent(Graphics g)
+        	{
+        		super.paintComponent(g);
+        		//	drawApplyArrowIndicator
+                if(drawApplyArrowIndicator)
+                {
+                	int x1 = (int) settingsDataPanel.getWidth()-(applySettingsButton.getWidth()/2);
+                	int y1 = settingsDataPanel.getHeight() / 2;
+                	
+                	Point pointInFrame = new Point(settingsDataPanel.getWidth()-(applySettingsButton.getWidth()/2), (int) (settingsDataPanel.getHeight() / 1.2));//SwingUtilities.convertPoint(settingsDataPanel, applySettingsButton.getX(), applySettingsButton.getY(), this);
+                	
+                	int x2 = pointInFrame.x;
+                	int y2 = pointInFrame.y;
+                	
+                	//System.out.println("Drawing at:[" + x1 + ", " + y1 + "] to [" + x2 + ", " + y2 + "]");
+                	
+                	Graphics2D g2d = (Graphics2D) g;
+                	
+                	// Draw the main line of the arrow
+                	g2d.setColor(Color.RED);
+                	g2d.drawString("Apply Changes", x1-100, y1);
+                	g2d.drawLine(x1, y1, x2, y2);
+
+                    // Calculate the angle of the arrow
+                    double angle = Math.atan2(y2 - y1, x2 - x1);
+
+                    // Arrowhead size
+                    int arrowHeadLength = 10;
+                    int arrowHeadAngle = 45;  // degrees
+
+                    // Left side of the arrowhead
+                    int xLeft = (int) (x2 - arrowHeadLength * Math.cos(angle - Math.toRadians(arrowHeadAngle)));
+                    int yLeft = (int) (y2 - arrowHeadLength * Math.sin(angle - Math.toRadians(arrowHeadAngle)));
+
+                    // Right side of the arrowhead
+                    int xRight = (int) (x2 - arrowHeadLength * Math.cos(angle + Math.toRadians(arrowHeadAngle)));
+                    int yRight = (int) (y2 - arrowHeadLength * Math.sin(angle + Math.toRadians(arrowHeadAngle)));
+
+                    // Draw the arrowhead
+                    g2d.drawLine(x2, y2, xLeft, yLeft);
+                    g2d.drawLine(x2, y2, xRight, yRight);
+                }
+        	}
+        };
         settingsDataPanel.setBackground(Color.BLACK);
         settingsDataPanel.setLayout(new FlowLayout(FlowLayout.LEFT));
         settingsDataPanel.setPreferredSize(settingsPanel.getPreferredSize());
@@ -497,6 +723,18 @@ public class GfxWindow extends JPanel implements Runnable
         settingsBottomPanel.setPreferredSize(settingsPanel.getPreferredSize());
         settingsPanel.add(settingsBottomPanel);
         
+        stayOnTopCheckBox = new JCheckBox("Stay On Top");
+        stayOnTopCheckBox.setSelected(tracker.settings.stayOnTop);
+        stayOnTopCheckBox.setForeground(Color.WHITE);
+        stayOnTopCheckBox.setBackground(Color.BLACK);
+        settingsBottomPanel.add(stayOnTopCheckBox);
+        
+        printConsoleCheckBox = new JCheckBox("Print Console");
+        printConsoleCheckBox.setToolTipText("Debug option to print extra data to console, please ignore <3");
+        printConsoleCheckBox.setSelected(tracker.settings.printConsole);
+        printConsoleCheckBox.setBackground(settingsDataPanel.getBackground());
+        settingsBottomPanel.add(printConsoleCheckBox);
+        
         debugCheckBox = new JCheckBox("Debug Mode");
         debugCheckBox.setSelected(tracker.settings.debugMode);
         debugCheckBox.setBackground(settingsDataPanel.getBackground());
@@ -521,8 +759,14 @@ public class GfxWindow extends JPanel implements Runnable
                 settingsFontSize.setText(tracker.settings.fontSize + "");
                 settingsGraphNodeSpacing.setText(tracker.settings.graphNodeSpacing + "");
                 settingsGraphNodeSpacing.setText(tracker.settings.graphXPCeiling + "");
+                drawInactiveGraphCheckBox.setSelected(tracker.settings.drawInactiveGraph);
+                settingsMonsterChatlog.setText("No directory selected..");
                 settingsDataPullSize.setText(tracker.settings.pullSize + "");
                 settingsDataSearchSize.setText(tracker.settings.searchSize + "");
+                stayOnTopCheckBox.setSelected(tracker.settings.stayOnTop);
+                tracker.frame.setAlwaysOnTop(tracker.settings.stayOnTop);
+                printConsoleCheckBox.setSelected(tracker.settings.printConsole);
+                debugCheckBox.setSelected(tracker.settings.debugMode);
             }
         });
         
@@ -538,6 +782,7 @@ public class GfxWindow extends JPanel implements Runnable
             {
                 //  APPLY COLOR SWATCH HERE
                 int colorR = 0, colorG = 0, colorB = 0, fontSize = 12, graphNodeSpacing = 8, graphXPCeiling = 3000, pullSize = 20, searchSize = 5000;
+                String chatDirectory = "No directory selected..";
                 
                 colorR = Integer.parseInt(colorSchema1TextField.getText());
                 colorG = Integer.parseInt(colorSchema2TextField.getText());
@@ -545,6 +790,7 @@ public class GfxWindow extends JPanel implements Runnable
                 fontSize = Integer.parseInt(settingsFontSize.getText());
                 graphNodeSpacing = Integer.parseInt(settingsGraphNodeSpacing.getText());
                 graphXPCeiling = Integer.parseInt(settingsGraphXPCeiling.getText());
+                
                 pullSize = Integer.parseInt(settingsDataPullSize.getText());
                 searchSize = Integer.parseInt(settingsDataSearchSize.getText());
                 
@@ -560,6 +806,8 @@ public class GfxWindow extends JPanel implements Runnable
                 	settingsGraphNodeSpacing.setText("8");
                 if(settingsGraphXPCeiling.getText().equals(""))
                 	settingsGraphXPCeiling.setText("3000");
+                if(settingsMonsterChatlog.getText().equals("") || settingsMonsterChatlog.getText().length() < 5)
+                	settingsMonsterChatlog.setText("No directory selected..");
                 if(settingsDataPullSize.getText().equals(""))
                     settingsDataPullSize.setText("20");
                 if(settingsDataSearchSize.getText().equals(""))
@@ -614,12 +862,26 @@ public class GfxWindow extends JPanel implements Runnable
                 
                 tracker.settings.graphNodeSpacing = Integer.parseInt(settingsGraphNodeSpacing.getText());
                 tracker.settings.graphXPCeiling = Integer.parseInt(settingsGraphXPCeiling.getText());
+                tracker.settings.drawInactiveGraph = drawInactiveGraphCheckBox.isSelected();
+                
+                tracker.settings.chatLogDirectory = settingsMonsterChatlog.getText();
                 
                 tracker.settings.pullSize = Integer.parseInt(settingsDataPullSize.getText());
                 tracker.settings.searchSize = Integer.parseInt(settingsDataSearchSize.getText());
+                tracker.settings.stayOnTop = stayOnTopCheckBox.isSelected();
+                tracker.frame.setAlwaysOnTop(tracker.settings.stayOnTop);
+                tracker.settings.printConsole = printConsoleCheckBox.isSelected();
                 tracker.settings.debugMode = debugCheckBox.isSelected(); 
                 
                 tracker.saveData();
+                
+                
+                //	Remove border if used to indicate Apply button needs to be pressed..
+                if(applySettingsButton.getBorder() != null)
+                {
+                	drawApplyArrowIndicator = false;
+                	applySettingsButton.setBorder(null);
+                }
             }
         });
         
@@ -630,7 +892,7 @@ public class GfxWindow extends JPanel implements Runnable
         settingsButton.setMinimumSize(new Dimension(20, 20));
         settingsButton.setMaximumSize(new Dimension(20, 20));
         settingsButton.setPreferredSize(new Dimension(20, 20));
-        topLeftPanel.add(settingsButton, BorderLayout.EAST);
+        topLeftPanel.add(settingsButton);
         
         // Add MouseListener to the label
         settingsButton.addMouseListener(new MouseAdapter()
@@ -641,6 +903,7 @@ public class GfxWindow extends JPanel implements Runnable
                 if(settingsPanel.isVisible())
                 {
                     changelogPanel1.setVisible(false);
+                    monsterPanel.setVisible(false);
                     settingsPanel.setVisible(false);
                     
                     xpList.setVisible(true);
@@ -651,6 +914,7 @@ public class GfxWindow extends JPanel implements Runnable
                     
                     xpList.setVisible(false);
                     changelogPanel1.setVisible(false);
+                    monsterPanel.setVisible(false);
                     
                     settingsPanel.setVisible(true);
                 }
@@ -753,11 +1017,17 @@ public class GfxWindow extends JPanel implements Runnable
         
         xpList = new JPanel();
         xpList.setLayout(new BoxLayout(xpList, BoxLayout.Y_AXIS));
+        xpList.setAlignmentX(Component.LEFT_ALIGNMENT);
+        xpList.setMaximumSize(new Dimension(Integer.MAX_VALUE, Integer.MAX_VALUE));
+        //xpList.setPreferredSize(this.getSize());
         //xpList.setLocation(0, 0);
-        xpList.setPreferredSize(new Dimension(sizeX, sizeY));
-        xpList.setBackground(Color.black);
+        //xpList.setPreferredSize(new Dimension(sizeX, sizeY));
+        //xpList.setMaximumSize(xpList.getPreferredSize());
+        //xpList.setPreferredSize(xpList.getPreferredSize());
+        //xpList.setMinimumSize(xpList.getPreferredSize());
+        xpList.setBackground(Color.BLACK);
         xpList.setVisible(true);
-        this.add(xpList, BorderLayout.CENTER);
+        this.add(xpList);
         
         Random random = new Random(System.currentTimeMillis());
         loadingChinaLabel = new JLabel();
@@ -795,6 +1065,7 @@ public class GfxWindow extends JPanel implements Runnable
         loadingPanel2.setLayout(new BoxLayout(loadingPanel2, BoxLayout.Y_AXIS));
         loadingPanel2.setPreferredSize(loadingPanel2.getPreferredSize());
         loadingPanel2.setMaximumSize(new Dimension((int) (loadingLabel1.getPreferredSize().width * 1.18), (int) (loadingLabel2.getPreferredSize().height*14)));
+        loadingPanel2.setMinimumSize(new Dimension((int) (loadingLabel1.getPreferredSize().width * 1.18), (int) (loadingLabel2.getPreferredSize().height*14)));
         loadingPanel2.setBackground(Color.BLACK);
         loadingPanel2.setVisible(true);
         loadingPanel2.add(loadingLabel1);
@@ -807,8 +1078,10 @@ public class GfxWindow extends JPanel implements Runnable
         loadingPanel.setPreferredSize(loadingPanel.getPreferredSize());
         loadingPanel.setBackground(Color.BLACK);
         loadingPanel.setVisible(true);
+        //loadingPanel.add(Box.createHorizontalGlue());
         loadingPanel.add(loadingChinaLabel);
         loadingPanel.add(loadingPanel2);
+        //loadingPanel.add(Box.createHorizontalGlue());
         
         xpList.add(new JLabel(" "));
         xpList.add(new JLabel(" "));
@@ -816,8 +1089,6 @@ public class GfxWindow extends JPanel implements Runnable
         xpList.add(new JLabel(" "));
         xpList.add(new JLabel(" "));
         xpList.add(loadingPanel);
-        
-        
         
         setVisible(true);
     }
@@ -839,9 +1110,12 @@ public class GfxWindow extends JPanel implements Runnable
                 {
                     for(int a=0;a<xpList.getComponentCount();a++)
                     {
-                        //xpList.getComponent(a).setBounds(0, a*16, 600, 32);
-                        xpList.getComponent(a).setVisible(true);
-                        xpList.getComponent(a).repaint();
+                    	if(xpList.getComponent(a) != null)
+                    	{
+                    		//xpList.getComponent(a).setBounds(0, a*16, 600, 32);
+                    		xpList.getComponent(a).setVisible(true);
+                    		xpList.getComponent(a).repaint();
+                    	}
                     }
                     
                     //System.out.println("panel size: " + ((JPanel) this.getComponent(0)).getComponentCount());
@@ -869,14 +1143,10 @@ public class GfxWindow extends JPanel implements Runnable
     {
         super.paintComponent(g);
         
-        g.drawString(timestamp + "", 2, 13);
         
-        // Draw your 2D graphics here
-        //g.setColor(Color.RED);
-        //g.fillRect(100, 100, 200, 150);
-
-        //g.setColor(Color.BLUE);
-        //g.fillOval(300, 300, 100, 100);
+        
+        
+        //g.drawString(timestamp + "", 2, 13);
     }
 
     public void start()

@@ -19,6 +19,7 @@ public class Tracker
     
     SettingsProfile settings = new SettingsProfile(this);
     Web web;
+    JFrame frame;
     GfxWindow panel;
     
     // record keeping
@@ -53,17 +54,28 @@ public class Tracker
     {	
         try
         {
+        	// Load the icon image from a file
+            ImageIcon icon = new ImageIcon("EO-HS-Tracker/images/icon.png");
+
             SwingUtilities.invokeLater(() -> {
-            JFrame frame = new JFrame("Endless Online - Highscore Tracker");
+            frame = new JFrame("Endless Online - Highscore Tracker");
             panel = new GfxWindow(this);
             frame.add(panel);
             frame.pack();
             frame.setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
             frame.setLocationRelativeTo(null);
+            //frame.setBackground(Color.BLACK);
+            frame.setIconImage(icon.getImage());
+            frame.setAlwaysOnTop(settings.stayOnTop);
             frame.setVisible(true);
-            panel.start(); // Start the game loop
+            panel.setBackground(Color.BLACK);
+            panel.start(); // Start the loop
             
             settings.pullSize = Integer.parseInt(panel.settingsDataPullSize.getText());	//	Maybe comment out this line once verify settings profile save feature works correctly.
+            
+            //	Load Item/Monster Data once during instance runtime
+            web.loadItemData();
+        	web.loadMonsterData();
             });
         }
         
@@ -79,16 +91,33 @@ public class Tracker
             
             Thread.sleep(5000);
             
+            int targetFPS = 1;	//	FPS PER SECOND
+            long targetTime = 1000 / targetFPS;  // Target time in milliseconds per frame
             
             while(active)
             {
+            	long startTime = System.currentTimeMillis();
+            	
                 if(Instant.now().getEpochSecond() > lastUpdate.plusMillis(updateTimer).getEpochSecond())
                     pullData();
                 
                 //long nextUpdate = lastUpdate.plusMillis(updateTimer).getEpochSecond()-Instant.now().getEpochSecond();
                 
+                //	Feed chatlog data into reader to process in-game events happening real-time..
+                if(panel.monsterPanel.active.isSelected())
+                {
+                	panel.monsterPanel.chatLogReader.processFile();
+                	panel.monsterPanel.update();
+                }
+                
                 updateFrame();
-                Thread.sleep(framerate);
+                
+                long deltaTime = System.currentTimeMillis() - startTime;
+                
+                long sleepTime = targetTime - deltaTime;
+                
+                if (sleepTime > 0)
+                	Thread.sleep(sleepTime);
             }
             
             //printData();
@@ -156,7 +185,7 @@ public class Tracker
                 Entry currEntry = null, safeEntry = findName(web.list, ee.name);
                 for(int a=0;a<previous.size();a++)
                 {
-                	for(int b=0;b<previous.get(a).size(); b++)
+                	for(int b=0;b<previous.get(a).size();b++)
                 	{
 	                	currEntry = findName(previous.get(a), ee.name);
 	                	
@@ -213,17 +242,17 @@ public class Tracker
         try
         {
             previous.add(0, web.list);
-            System.out.println("previous list size: " + web.list.size());
+            //System.out.println("previous list size: " + web.list.size());
             
             if(previous.size() > dumpSize)
             {
                 previous.remove(previous.size()-1); // remove entry at end of array
             }
                     
-            web.retrieve();
+            //	web.retrieve();   // Aug. 22, 2025 commented out this line will revise and strip things as support to EODash is removed.
             saveData();
             
-            System.out.println("web list size: " + web.list.size());
+            //System.out.println("web list size: " + web.list.size());
             
             int highCount = settings.graphXPCeiling; // Ceiling on graph height 
             
@@ -235,21 +264,24 @@ public class Tracker
                 
                 newData.expChange = newData.exp - prevData.exp;
                 
-                if(newData.expChange >= 1)
+                if(newData.expChange >= 1 || settings.drawInactiveGraph)
                 {
-                	int tempEXPDiff = newData.expChange;	//	Naming convention tempEXPDifference a.k.a expChange
-                	
-                	if(tempEXPDiff > highCount)
-                	{
-                		tempEXPDiff = highCount;
-                	}
-                	
-                	//if(prevData.graphPoint != null)
-                	newData.graphPoint = new ArrayList<Double>(prevData.graphPoint);
-                    newData.graphPoint.add(0, (double) tempEXPDiff / highCount);
-                    
-                	if(newData.graphPoint.size() > dumpSize)
-                		newData.graphPoint.remove(newData.graphPoint.size() - 1);
+	            	int tempEXPDiff = newData.expChange;	//	Naming convention tempEXPDifference a.k.a expChange
+	            	
+	            	if(tempEXPDiff > highCount)
+	            	{
+	            		tempEXPDiff = highCount;
+	            	}
+	            	
+	            	if(prevData.graphPoint == null)
+	            		prevData.graphPoint = new ArrayList<Double>();
+	            	
+	        		newData.graphPoint = new ArrayList<Double>(prevData.graphPoint);
+	        		newData.graphPoint.add(0, (double) tempEXPDiff / highCount);
+	                
+	            	if(newData.graphPoint.size() > dumpSize)
+	            		newData.graphPoint.remove(newData.graphPoint.size() - 1);
+	            	
                 }
             }
             
@@ -270,7 +302,8 @@ public class Tracker
             panel.xpList.removeAll();
             //panel.stringList = new ArrayList<JLabel>();
             
-            System.out.println(appendSpaces("Rank", 6) + appendSpaces("Name", 15) + appendSpaces("Level", 16) + appendSpaces("EXP", 22) + appendSpaces("CHANGE", 15) + "XP/HR   ");
+            if(settings.printConsole)
+            	System.out.println(appendSpaces("Rank", 6) + appendSpaces("Name", 15) + appendSpaces("Level", 16) + appendSpaces("EXP", 22) + appendSpaces("CHANGE", 15) + "XP/HR   ");
             JLabel tHeader = new JLabel(appendSpaces("Rank", 6) + appendSpaces("Name", 15) + appendSpaces("Level", 10) + appendSpaces("EXP", 17) + appendSpaces("CHANGE", 16) + "XP/HR      ");
             tHeader.setForeground(Color.WHITE);
             tHeader.setBackground(panel.colorSchemaColor);
@@ -408,7 +441,8 @@ public class Tracker
 		                    panel.xpList.setPreferredSize(panel.xpList.getPreferredSize());
 	                    }
 	                    
-	                    System.out.println(tempString);
+	                    if(settings.printConsole)
+	                    	System.out.println(tempString);
 	                }
 	                
 	                else
@@ -478,7 +512,8 @@ public class Tracker
 	                    
 	                    panel.xpList.add(tempPanel);
 	                    
-	                    System.out.println(tempString);
+	                    if(settings.printConsole)
+	                    	System.out.println(tempString);
 	                }
             	}
             }
@@ -560,7 +595,7 @@ public class Tracker
     {
     	try
     	{
-    		String fileName= "settings.ser";
+    		String fileName = "settings.ser";
     		
     		File file = new File(fileName);
             if (file.exists())
@@ -586,7 +621,7 @@ public class Tracker
     	
         try
         {
-            String fileName= "lastSession.ser";
+            String fileName = "lastSession.ser";
             
             File file = new File(fileName);
             if (file.exists())
@@ -627,14 +662,16 @@ public class Tracker
     {
         try
         {
-            new ProcessBuilder("cmd", "/c", "cls").inheritIO().start().waitFor();
+        	if(settings.printConsole)
+        		new ProcessBuilder("cmd", "/c", "cls").inheritIO().start().waitFor();
             printData();
             
             long lastUpdateInSeconds = ((Instant.now().getEpochSecond()-lastUpdate.getEpochSecond()));
             long nextUpdate = lastUpdate.plusMillis(updateTimer).getEpochSecond()-Instant.now().getEpochSecond();
             
-            System.out.println("Last update: " + lastUpdateInSeconds + " seconds ago.. Next update in " + nextUpdate + " seconds.");
-            panel.updateTimer.setText("        Refresh in " + nextUpdate + " seconds" + appendSpaces("", 8));
+            if(settings.printConsole)
+            	System.out.println("Last update: " + lastUpdateInSeconds + " seconds ago.. Next update in " + nextUpdate + " seconds.");
+            panel.updateTimer.setText("   Refresh in " + nextUpdate + " seconds" + appendSpaces("", 3));
         }
         
         catch(Exception e)

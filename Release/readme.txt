@@ -8,6 +8,9 @@ This Java project/JAR was written by 'Endless-Online Recharged' player "China." 
 
 This program is supposed to act as a tool to help my fellow xp-grinders track their xp/hr progress.
 
+================= MESSAGE Aug. 22, 2025 =================
+
+The project has a lot of issues as of date, just too lazy to go through and clean it up.. After API access was removed (EODash was shutdown) it kind of neutered the highscore aspect of the project. I ended up making the monster log feature pretty useful/satisfying to watch to see stats for current session. If I get enough support or interest things may change but I don't know.
 
 ================= REQUIREMENTS =================
 
@@ -21,8 +24,29 @@ This program is supposed to act as a tool to help my fellow xp-grinders track th
 2. Wait for data to be pulled from eodash website.
 3. View data and changes overtime.
 
+Instruction for Monster Log:
+	- The Monster Log does not access the memory of the EO project itself, instead it reads the bottom few lines of the chatlog.txt file, continuously searching for line changes in only the bottom few entries (does not waste processing power going through higher entries)
+
+1. Make sure EConfig has chatlog.txt output enabled. Open config -> Chat -> Enable [Log chat file].
+2. Ensure your your chatlog.txt file directory is outputting correctly.
+3. Click the gear icon near the top of the window -> set the directory to where the chatlog.txt file is located.
+4. Hit the Apply button (don't forget loool).
+5. Open Monster Log -> check the box [ENABLE LOG].
+
 
 ================= CHANGELOG =================
+
+(PRE-RELEASE VERSION)
+- [V0.5.1] Aug. 22, 2025
+	- [Fix] Monster Log reading new chatline entries which were changed by EO update.
+	- [Fix] Lazy hotfix to remove EODash pull request.
+- [V0.5] Sep. 10, 2024
+	- [Added] Monster Log
+		- [Feature] Live Progress data of monsters you kill.
+		- [Feature] Live progress of picked up or harvested items.
+		- [Feature] Monster info data when clicking on image of monster.
+	- [Fix] GUI formatting issues in some panels.
+	- [Added] Draw Graph Inactivity setting to keep graph lines from being removed from inactivity.
 
 - [V0.4] Apr. 3rd, 2024
 	- [Added] Line graph for each entry that simulates activity based off data of exp change data.
