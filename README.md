@@ -63,7 +63,7 @@ A tool designed to provide relatively accurate XP/HR predictions based on a samp
 # Dependencies
 
 Running the Debug.bat file executes the 'EO-HS-Tracker.jar' file, which uses two other .jar files as libraries/dependencies. All dependencies come already-provided with this tool. The explanation of the other .jar dependencies are as followed:
-	- jsoup-1.16.1.jar: This library allows ease-of-use web access to pull data from the eodash website.
+	- jsoup-1.16.1.jar: This library allows ease-of-use web access to pull data from the eor-api.exile-studios.com website.
 	- gson-2.10.1.jar: This library builds off the jsoup library to provide easy JSON-format parsing.
 
 
